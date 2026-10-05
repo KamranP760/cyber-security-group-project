@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NovaBank Security Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1623; --card: #182236; --line: #26344f; --text: #e6edf7; --muted: #8b9bb8;
+    --low: #2ecc71; --med: #f5a623; --high: #ff4d4f; --accent: #4da3ff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Segoe UI, Arial, sans-serif; background: var(--bg); color: var(--text); }
+  header { display: flex; justify-content: space-between; align-items: center;
+           padding: 16px 24px; border-bottom: 1px solid var(--line); flex-wrap: wrap; gap: 8px; }
+  header h1 { margin: 0; font-size: 20px; }
+  header h1 span { color: var(--accent); }
+  .status { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #666; }
+  .dot.ok { background: var(--low); box-shadow: 0 0 8px var(--low); }
+  .dot.bad { background: var(--high); }
+  main { padding: 20px 24px; max-width: 1300px; margin: 0 auto; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .card .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .card .value { font-size: 32px; font-weight: 700; margin-top: 6px; }
+  .card.med .value { color: var(--med); }
+  .card.high .value { color: var(--high); }
+  .card.ok .value { color: var(--low); }
+  .grid2 { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 20px; }
+  @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+  .grid2 .panel { margin-bottom: 0; }
+  .panel h2 { margin: 0 0 12px; font-size: 15px; }
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--muted); font-weight: 600; padding: 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .empty { color: var(--muted); padding: 18px 8px; text-align: center; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+  .LOW { background: rgba(46,204,113,.18); color: var(--low); }
+  .MEDIUM { background: rgba(245,166,35,.18); color: var(--med); }
+  .HIGH { background: rgba(255,77,79,.2); color: var(--high); }
+  .chip { display: inline-block; background: #22304d; border-radius: 6px; padding: 2px 7px; margin: 0 4px 4px 0; font-size: 11px; }
+  .bar { width: 90px; height: 8px; background: #22304d; border-radius: 4px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 6px; }
+  .bar > i { display: block; height: 100%; }
+  .mono { font-family: Consolas, monospace; }
+  .status-pill { font-size: 11px; color: var(--muted); }
+  .chart { display: flex; align-items: flex-end; justify-content: space-around; height: 170px; padding-top: 10px; }
+  .col { text-align: center; width: 28%; }
+  .col .b { width: 100%; border-radius: 6px 6px 0 0; min-height: 3px; transition: height .4s; }
+  .col .n { font-weight: 700; margin-bottom: 4px; }
+  .col .l { margin-top: 6px; font-size: 12px; color: var(--muted); }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 10px 0 24px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>NovaBank <span>Security Dashboard</span></h1>
+  <div class="status"><span id="dot" class="dot"></span><span id="statusText">Connecting...</span>
+    <span id="updated"></span></div>
+</header>
+
+<main>
+  <section class="cards">
+    <div class="card"><div class="label">Sessions monitored</div><div class="value" id="c_seen">0</div></div>
+    <div class="card med"><div class="label">Flagged (Medium)</div><div class="value" id="c_med">0</div></div>
+    <div class="card high"><div class="label">High-risk detected</div><div class="value" id="c_high">0</div></div>
+    <div class="card ok"><div class="label">Sessions terminated</div><div class="value" id="c_term">0</div></div>
+  </section>
+
+  <section class="grid2">
+    <div class="panel">
+      <h2>Live and recent sessions</h2>
+      <div class="scroll"><table>
+        <thead><tr><th>Session</th><th>User</th><th>Risk score</th><th>Level</th>
+          <th>Reasons</th><th>Action</th><th>Status</th></tr></thead>
+        <tbody id="liveBody"><tr><td colspan="7" class="empty">Waiting for data...</td></tr></tbody>
+      </table></div>
+    </div>
+    <div class="panel">
+      <h2>Risk levels (current sessions)</h2>
+      <div class="chart" id="chart"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Recent incidents</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>Time (UTC)</th><th>Session</th><th>Score</th><th>Level</th>
+        <th>Action taken</th><th>Outcome</th><th>Reasons</th></tr></thead>
+      <tbody id="incBody"><tr><td colspan="7" class="empty">No incidents yet.</td></tr></tbody>
+    </table></div>
+  </section>
+</main>
+
+<footer>Educational demo: all activity is simulated against our own NovaBank app. Auto-refreshes every 3 seconds.</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const COLORS = { LOW: "#2ecc71", MEDIUM: "#f5a623", HIGH: "#ff4d4f" };
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g,
+    c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+async function getJSON(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+
+function chips(reasons) {
+  if (!reasons || !reasons.length) return '<span class="status-pill">None (normal)</span>';
+  return reasons.map(r => '<span class="chip">' + esc(r) + "</span>").join("");
+}
+
+function renderLive(sessions) {
+  const body = $("liveBody");
+  if (!sessions.length) {
+    body.innerHTML = '<tr><td colspan="7" class="empty">No sessions yet. Run the demo simulator.</td></tr>';
+    return;
+  }
+  body.innerHTML = sessions.map(s => {
+    const color = COLORS[s.risk_level] || "#888";
+    return "<tr>" +
+      '<td class="mono">' + esc(s.session) + "</td>" +
+      "<td>" + esc(s.user_id) + "</td>" +
+      '<td><span class="bar"><i style="width:' + Math.min(100, s.risk_score) + "%;background:" + color + '"></i></span>' + esc(s.risk_score) + "</td>" +
+      '<td><span class="badge ' + esc(s.risk_level) + '">' + esc(s.risk_level) + "</span></td>" +
+      "<td>" + chips(s.reasons) + "</td>" +
+      "<td>" + esc(s.action) + "</td>" +
+      '<td><span class="status-pill">' + esc(s.status) + "</span></td></tr>";
+  }).join("");
+}
+
+function renderIncidents(list) {
+  const body = $("incBody");
+  if (!list.length) {
+    body.innerHTML = '<tr><td colspan="7" class="empty">No incidents yet.</td></tr>';
+    return;
+  }
+  body.innerHTML = list.map(i =>
+    "<tr>" +
+    "<td>" + esc(i.timestamp) + "</td>" +
+    '<td class="mono">' + esc(i.session) + "</td>" +
+    "<td>" + esc(i.risk_score) + "</td>" +
+    '<td><span class="badge ' + esc(i.risk_level) + '">' + esc(i.risk_level) + "</span></td>" +
+    "<td>" + esc(i.action) + "</td>" +
+    "<td>" + esc(i.outcome) + "</td>" +
+    "<td>" + chips(i.reasons) + "</td></tr>"
+  ).join("");
+}
+
+function renderChart(counts) {
+  const levels = ["LOW", "MEDIUM", "HIGH"];
+  const max = Math.max(1, counts.LOW, counts.MEDIUM, counts.HIGH);
+  $("chart").innerHTML = levels.map(l => {
+    const h = Math.round((counts[l] / max) * 130);
+    return '<div class="col"><div class="n">' + counts[l] + "</div>" +
+      '<div class="b" style="height:' + h + "px;background:" + COLORS[l] + '"></div>' +
+      '<div class="l">' + l + "</div></div>";
+  }).join("");
+}
+
+async function refresh() {
+  try {
+    const [sum, live, inc] = await Promise.all([
+      getJSON("/api/summary"),
+      getJSON("/api/live"),
+      getJSON("/api/incidents?limit=15"),
+    ]);
+    $("c_seen").textContent = sum.sessions_seen;
+    $("c_med").textContent = sum.flagged_medium;
+    $("c_high").textContent = sum.high_risk;
+    $("c_term").textContent = sum.sessions_terminated;
+    renderLive(live.sessions || []);
+    renderIncidents(inc.incidents || []);
+    renderChart(sum.live_by_level || { LOW: 0, MEDIUM: 0, HIGH: 0 });
+    $("dot").className = "dot ok";
+    $("statusText").textContent = "Connected";
+    $("updated").textContent = live.updated ? "| monitor updated " + live.updated + " UTC" : "| waiting for monitor";
+  } catch (e) {
+    $("dot").className = "dot bad";
+    $("statusText").textContent = "Cannot reach dashboard API";
+    $("updated").textContent = "";
+  }
+}
+
+refresh();
+setInterval(refresh, 3000);
+</script>
+</body>
+</html>
