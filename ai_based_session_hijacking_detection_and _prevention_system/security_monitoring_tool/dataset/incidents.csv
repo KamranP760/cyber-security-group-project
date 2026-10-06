@@ -1,0 +1,16 @@
+timestamp,session_key,user_id,risk_score,risk_level,action,reasons,outcome
+2026-10-01 13:15:01,522021bb7db3a887a2909aa382734d10ca2812bcfa44a05aecb9579daffe8ee1,,95,HIGH,INVALIDATE_SESSION,Manual live test,session not found
+2026-10-01 13:32:58,2b2d43674278afa5046eb61ae4a200999bb4d985de85f72611d44ac5c5e3ce4c,,95,HIGH,INVALIDATE_SESSION,Manual live test,Session invalidated successfully.
+2026-10-01 13:34:25,2b2d43674278afa5046eb61ae4a200999bb4d985de85f72611d44ac5c5e3ce4c,,95,HIGH,INVALIDATE_SESSION,Manual live test,Session already invalidated.
+2026-10-01 13:37:40,48ccd9222139a6b1cd63ba7026a214e1379d745847393c1bdcf0411484fbcc58,,95,HIGH,INVALIDATE_SESSION,Manual live test,Session invalidated successfully.
+2026-10-01 14:31:36,573c3b6ecd1e8229a7785441dddbad8f777bcfc4b180654dbad83594f762c2a6,13,49,MEDIUM,WARN_AND_FLAG,Multiple failed login attempts; Unusual request frequency,flagged
+2026-10-01 14:31:59,573c3b6ecd1e8229a7785441dddbad8f777bcfc4b180654dbad83594f762c2a6,13,81,HIGH,INVALIDATE_SESSION,Multiple failed login attempts; IP change detected; Unusual request frequency,Session invalidated successfully.
+2026-10-02 06:55:02,e37a43fad595afe77c08fe7842286add49019d11983b18c11f696f7e14cab524,14,48,MEDIUM,WARN_AND_FLAG,Multiple failed login attempts; Unusual request frequency,flagged
+2026-10-02 06:55:25,e37a43fad595afe77c08fe7842286add49019d11983b18c11f696f7e14cab524,14,81,HIGH,INVALIDATE_SESSION,Multiple failed login attempts; IP change detected; Unusual request frequency,Session invalidated successfully.
+2026-10-02 07:03:17,4684ab812773be6df48c2a66e2c25c646302c83cbb588b0c670368e6f3631f46,16,31,MEDIUM,WARN_AND_FLAG,Multiple failed login attempts; Elevated request frequency,flagged
+2026-10-02 10:10:47,7f6aa62cb91fd6a846f1bda08a32767f53afcc2fddda90415482fd07de5104af,18,48,MEDIUM,WARN_AND_FLAG,Multiple failed login attempts; Unusual request frequency,flagged
+2026-10-02 10:11:10,7f6aa62cb91fd6a846f1bda08a32767f53afcc2fddda90415482fd07de5104af,18,81,HIGH,INVALIDATE_SESSION,Multiple failed login attempts; IP change detected; Unusual request frequency,Session invalidated successfully.
+2026-10-02 11:05:55,d199ef961715e24b59f90c40097f6c97b108e2ea66560654ac56063022f72ff7,21,49,MEDIUM,WARN_AND_FLAG,Multiple failed login attempts; Unusual request frequency,flagged
+2026-10-02 11:06:18,d199ef961715e24b59f90c40097f6c97b108e2ea66560654ac56063022f72ff7,21,81,HIGH,INVALIDATE_SESSION,Multiple failed login attempts; IP change detected; Unusual request frequency,Session invalidated successfully.
+2026-10-02 11:18:50,1373e9f9ce6f668d1ecdfc7eda3062e8dff0e680e04eb210bd96adf8b1ea928e,22,31,MEDIUM,WARN_AND_FLAG,Multiple failed login attempts; Elevated request frequency,flagged
+2026-10-05 08:03:28,b47a7d0169f1c6d2b980dfa804d85c44185416a41648f4472654bfe0498db66a,23,100,HIGH,INVALIDATE_SESSION,ML anomaly detected; Multiple failed login attempts; IP change detected; Unusual request frequency; Unusual page or transaction activity,Session already logged_out.
